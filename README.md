@@ -81,9 +81,8 @@ services:
       CLINICALSITE_BASE_URL: https://clinicalsite.example.com
       APP_CS_OIDC_SCOPE: openid+profile+email
       APP_CS_CLIENT_ID: client1
-      AI_SERVICE_BASE_URL: https://ai-visitplan.tfm.example.com
-      AI_SERVICE_BACKEND_URL: https://backend.ai-visitplan.tfm.example.com
-      AI_SERVICE_BACKEND_API_URL: /api/code/
+      AI_SERVICE_FRONTEND_URL: https://ai-visitplan.tfm.example.com
+      AI_SERVICE_BACKEND_URL: https://backend.ai-visitplan.tfm.example.com/api/code/
     ports:
       - 8080:80
     volumes:
@@ -139,9 +138,8 @@ Frontend:
 | APP_CS_CLIENT_ID           |       Ja     | Name des Browser-basierten OIDC Clients  (Authentifizierung ohne Kennwort) |               | client1                                 |
 | APP_CS_OIDC_SCOPE          |       Ja     | Scope des OIDC Clients                                                     |               | openid+profile+email                    |
 | BACKEND_PUBLIC_BASE_URL    |       Ja     | URL der Backend Instanz, diese muss über den Browser erreichbar sein       |               | https://backend.tfm.example.com         |
-| AI_SERVICE_BASE_URL        |       Ja     | Base URL der AI-Instanz                                                    |               | https://ai-visitplan.tfm.example.com    |
-| AI_SERVICE_BACKEND_URL     |       Ja     | Backend URL der AI-Instanz                                                 |               | https://be.ai-visitplan.tfm.example.com |
-| AI_SERVICE_BACKEND_API_URL |       Ja     | Api Pfad der AI-Instanz                                                    |               | /api/code/                              |
+| AI_SERVICE_FRONTEND_URL    |       Ja     | Frontend URL der AI-Instanz                                                |               | https://ai-visitplan.tfm.example.com    |
+| AI_SERVICE_BACKEND_URL     |       Ja     | Backend URL der AI-Instanz                                                 |               | https://be.ai-visitplan.tfm.example.com/api/code/ |
 
 Backend:
 
