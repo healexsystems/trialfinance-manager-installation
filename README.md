@@ -121,7 +121,7 @@ services:
         read_only: true    
 
   db:
-    image: postgres:15-bookworm
+    image: postgres:15-alpine
     container_name: tfm-db
     environment:
       POSTGRES_PASSWORD: secret-root-pw
