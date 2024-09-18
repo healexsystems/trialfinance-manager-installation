@@ -115,7 +115,10 @@ services:
     ports:
       - 4000:80      
     volumes:
-      - ./licence.key:/app/licence.key:ro
+      - type: bind
+        source: ./licence.key
+        target: /app/licence.key
+        read_only: true    
 
   db:
     image: postgres:15-bookworm
@@ -124,7 +127,10 @@ services:
       POSTGRES_PASSWORD: secret-root-pw
     volumes:
       - db:/var/lib/postgresql/data    
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - type: bind
+        source: ./init.sql
+        target: /docker-entrypoint-initdb.d/init.sql
+        read_only: true
 ```
 
 # Umgebungsvariablen
