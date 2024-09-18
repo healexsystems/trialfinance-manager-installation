@@ -59,7 +59,7 @@ Am einfachsten lässt sich der TFM über `docker compose` starten. Hierfür werd
 
   - frontend: Frontend Container des TrialFinance Managers
   - backend: Backend Container des TrialFinance Managers
-  - db: MariaDB Datenbank Container
+  - db: Postgres Datenbank Container
 
 Beispiel für eine compose.yml:
 
@@ -109,6 +109,7 @@ services:
       DB_OWNER_USER: migration
       DB_OWNER_PASS: migration_secret_pw      
       CLINICALSITE_BASE_URL: https://clinicalsite.example.com
+      CLINICALSITE_ROLES_REPORT_PATH: /api/query/tfm_roles
       OIDC_CLIENT_ID: client2
       OIDC_CLIENT_SECRET: oidc_client_secret
       LICENCE_SECRET: license_secret
@@ -161,6 +162,7 @@ Backend:
 | DB_OWNER_USER              |       Ja     | Datenbank Migrations-Benutzer                                          |               | migration                              |
 | DB_OWNER_PASS              |       Ja     | Passwort des Datenbank-Migrations-Benutzers                            |               |                                        |
 | CLINICALSITE_BASE_URL      |       Ja     | Base URL der ClinialSite Instanz                                       |               | https://clinicalsite.example.com       |
+| CLINICALSITE_ROLES_REPORT_PATH |   Ja     | Pfad zum ClinicalSite Report, in welchem die Benutzer Rollen und Rechte defniert sind. Der API-Bezeichner des Reports ist in ClinicalSite frei wählbar und muss im Pfad korrekt angegeben werden. | | "/api/query/${REPORT_NAME}", <br>z.B. "/api/query/tfm_roles"
 | OIDC_CLIENT_ID             |       Ja     | Name des Server-basierten ClinicalSite OIDC Clients (Authentifizierung per Kennwort)|               | client2                   |
 | OIDC_CLIENT_SECRET         |       Ja     | Kennwort des ClinicalSite OIDC Clients                                 |               |                                        |
 | LICENCE_SECRET             |       Ja     | Entschlüsselungs-Kennwort für die Lizenz Signatur                      |               |                                        |
