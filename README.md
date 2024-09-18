@@ -112,7 +112,6 @@ services:
       OIDC_CLIENT_ID: client2
       OIDC_CLIENT_SECRET: oidc_client_secret
       LICENCE_SECRET: license_secret
-      CSRF_SECRET: csrf_secret_minimum_32_characters
     ports:
       - 4000:80      
     volumes:
@@ -159,7 +158,6 @@ Backend:
 | OIDC_CLIENT_ID             |       Ja     | Name des Server-basierten ClinicalSite OIDC Clients (Authentifizierung per Kennwort)|               | client2                   |
 | OIDC_CLIENT_SECRET         |       Ja     | Kennwort des ClinicalSite OIDC Clients                                 |               |                                        |
 | LICENCE_SECRET             |       Ja     | Entschlüsselungs-Kennwort für die Lizenz Signatur                      |               |                                        |
-| CSRF_SECRET                |       Ja     | Kennwort zur Verhinderung von Cross-Site Request Forgery Attacken, Mindestlänge: 32 Zeichen     |               |              |
 
 # Docker Secrets
 Als eine Alternative zur Weitergabe vertraulicher Informationen über Umgebungsvariablen können Docker-Secrets verwendet werden.
@@ -173,7 +171,7 @@ Beispiel 1: Wert wird über den Environment-Abschnitt gesetzt:
    backend:
      image: healexsystems/sf-backend:latest
      environment:
-       - CSRF_SECRET=secret-pw
+       - LICENCE_SECRET=secret-pw
 ```
 
 Beispiel 2: Wert wird über ein Docker-Secret gesetzt:
@@ -183,7 +181,7 @@ Beispiel 2: Wert wird über ein Docker-Secret gesetzt:
    backend:
      image: image: healexsystems/sf-backend:latest
      environment:
-       - CSRF_SECRET_FILE=/run/secrets/app-secret
+       - LICENCE_SECRET_FILE=/run/secrets/app-secret
      secrets:
        - app-secret
 
@@ -206,7 +204,6 @@ Backend:
 * `OIDC_CLIENT_ID`
 * `OIDC_CLIENT_SECRET`
 * `LICENCE_SECRET`
-* `CSRF_SECRET`
 
 # SSL Proxy-Server
 Eine SSL-Verschlüsselung mittels eines Proxy Servers ist empfohlen und im produktiven Betrieb zwingend.
