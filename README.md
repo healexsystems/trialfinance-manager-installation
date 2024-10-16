@@ -11,6 +11,10 @@ Der Healex TrialFinance Manager verbessert die Abrechnung klinischer Studien dur
 - [Erste Schritte](#erste-Schritte)
 - [Umgebungsvariablen](#umgebungsvariablen)
 - [Docker Secrets](#docker-Secrets)
+- [OIDC Konfiguration](#oidc-konfiguration)
+  - [Einrichten der OIDC Clients in ClinicalSite](#einrichten-der-oidc-clients-in-clinicalsite)
+  - [OIDC System](#oidc-system)
+  - [Backend System](#backend-system)    
 - [SSL Proxy Server](#ssl-proxy-server)
 - [Login](#login)
 - [Container Shell](#zugriff-auf-die-container-shell)
@@ -212,6 +216,37 @@ Backend:
 * `OIDC_CLIENT_ID`
 * `OIDC_CLIENT_SECRET`
 * `LICENCE_SECRET`
+
+# OIDC Konfiguration
+
+## Einrichten der OIDC Clients in ClinicalSite
+
+Im ClinicalSite werden zwei unterschiedliche externe Systeme benötigt:
+* OIDC
+* Backend
+
+Hierfür werden administrative Rechte in ClinicalSite benötigt. Navigieren Sie zu: <br> 
+* ` Verwaltung - Externe Systeme`
+* Erstellen Sie ein `Neues externes System`
+
+## OIDC System
+* Wählen Sie eine beliebige Bezeichnung für den Client im Feld `Name`
+* Wählen Sie einen Namen für den `Bezeichner (Client ID)`. Dieser Wert muss im Frontend-Service für die Umgebungsvariable `APP_CS_CLIENT_ID` gesetzt werden.
+* Wählen Sie Client-Typ: `Browser-basiert (Authentifizierung ohne Kennwort, PKCE-Unterstützung erforderlich)`
+* Tragen Sie folgende `Redirect-URL` ein, z.B.:
+  * https://trialfinance.example.com/
+  * Achten Sie darauf, dass die URL mit `/`endet
+* Legen Sie den Client an
+
+Das Kennwort (Client Secret) wird nicht benötigt und wird deshalb nicht in TrialFinance hinterlegt.
+
+## Backend System
+* Wählen Sie eine beliebige Bezeichnung für den Client im Feld `Name`
+* Wählen Sie einen Namen für den `Bezeichner (Client ID)`. Dieser Wert muss im Backend-Service für die Umgebungsvariable `OIDC_CLIENT_ID` gesetzt werden.
+* Wählen Sie Client-Typ: `Server-basiert (Authentifizierung per Kennwort)`
+* Legen Sie den Client an
+* Das Kennwort (Client Secret) muss im Backend-Service für die Umgebungsvariable `OIDC_CLIENT_SECRET` gesetzt werden.
+
 
 # SSL Proxy-Server
 Eine SSL-Verschlüsselung mittels eines Proxy Servers ist empfohlen und im produktiven Betrieb zwingend.
