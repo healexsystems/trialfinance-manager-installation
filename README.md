@@ -118,6 +118,7 @@ services:
       OIDC_CLIENT_ID: client2
       OIDC_CLIENT_SECRET: oidc_client_secret
       LICENCE_SECRET: license_secret
+      AI_BACKEND_BEARER_TOKEN: long_random_bearer_token_goes_here
     ports:
       - 4000:80      
     volumes:
@@ -170,6 +171,7 @@ Backend:
 | OIDC_CLIENT_ID             |       Ja     | Name des Server-basierten ClinicalSite OIDC Clients (Authentifizierung per Kennwort)|               | client2                   |
 | OIDC_CLIENT_SECRET         |       Ja     | Kennwort des ClinicalSite OIDC Clients                                 |               |                                        |
 | LICENCE_SECRET             |       Ja     | Entschlüsselungs-Kennwort für die Lizenz Signatur                      |               |                                        |
+| AI_BACKEND_BEARER_TOKEN    |       Nein   | Bearer Token für den AI-Service. Diese muss mit dem Bearer Token des AI-Services übereinstimmen.                                        |               |                                        |
 
 # Docker Secrets
 Als eine Alternative zur Weitergabe vertraulicher Informationen über Umgebungsvariablen können Docker-Secrets verwendet werden.
@@ -216,6 +218,7 @@ Backend:
 * `OIDC_CLIENT_ID`
 * `OIDC_CLIENT_SECRET`
 * `LICENCE_SECRET`
+* `AI_BACKEND_BEARER_TOKEN`
 
 # OIDC Konfiguration
 
@@ -288,3 +291,4 @@ docker logs Container-ID
 
 # Upgrade
 * Seit v2777: ENV `AI_SERVICE_FRONTEND_URL` und `AI_SERVICE_BACKEND_URL` wird durch `AI_BACKEND_BASE_URL` ersetzt. <br> 
+  Backend Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` hinzugefügt 
