@@ -16,6 +16,7 @@ Der Healex TrialFinance Manager verbessert die Abrechnung klinischer Studien dur
   - [OIDC System](#oidc-system)
   - [Backend System](#backend-system)    
 - [SSL Proxy Server](#ssl-proxy-server)
+  - [Selbst signierte Zertifikate](#selbst-signierte-zertifikate)
 - [Login](#login)
 - [Container Shell](#zugriff-auf-die-container-shell)
 - [Logs](#anzeige-von-container-logs)
@@ -250,6 +251,26 @@ Das Kennwort (Client Secret) wird nicht benötigt und wird deshalb nicht in Tria
 
 # SSL Proxy-Server
 Eine SSL-Verschlüsselung mittels eines Proxy Servers ist empfohlen und im produktiven Betrieb zwingend.
+
+## Selbst signierte Zertifikate
+Für den Fall, dass TrialFinance mit Servern kommuniziert, welche selbst signierte Zertifikate verwenden, muss das Root Zertifikat der eigenen Zertifizierungsstelle dem Container hinzugefügt werden.
+Dies ist beispielsweise der Fall, wenn TrialFinance via OIDC mit ClinicalSite angebunden wird und ClinicalSite selbst signierte Zertifikate verwendet.
+
+Das Einbinden des Root Zertifikats geschieht über das Setzen der folgenden Umgebungsvariable:
+```yaml
+    environment:
+      NODE_EXTRA_CA_CERTS=/app/rootCA.crt
+```
+
+Hierfür muss das Root Zertifikat ebenfalls über den Volume-Abschnitt in den Container gemounted werden.
+
+```yaml
+    volumes:
+      - type: bind
+        source: ./rootCA.crt
+        target: /app/rootCA.crt
+        read_only: true   
+```
 
 # Login
 Ein Login ist ausschließlich über OIDC möglich.
