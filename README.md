@@ -20,6 +20,7 @@ Der Healex TrialFinance Manager verbessert die Abrechnung klinischer Studien dur
 - [Login](#login)
 - [Container Shell](#zugriff-auf-die-container-shell)
 - [Logs](#anzeige-von-container-logs)
+- [Upgrade](#upgrade)
 
 # Systemanforderungen
 ## Umgebungseinrichtung
@@ -86,8 +87,7 @@ services:
       CLINICALSITE_BASE_URL: https://clinicalsite.example.com
       APP_CS_OIDC_SCOPE: openid+profile+email
       APP_CS_CLIENT_ID: client1
-      AI_SERVICE_FRONTEND_URL: https://ai-visitplan.example.com
-      AI_SERVICE_BACKEND_URL: https://backend.ai-visitplan.example.com
+      AI_BACKEND_BASE_URL: https://backend.ai-visitplan.example.com
     ports:
       - 8080:80
     volumes:
@@ -110,7 +110,7 @@ services:
       DB_PORT: 3306
       DB_NAME: exmple-database
       DB_USER: example-user
-      DB_PASS: secret-pw
+      DB_PASS: secret_pw
       DB_OWNER_USER: migration
       DB_OWNER_PASS: migration_secret_pw      
       CLINICALSITE_BASE_URL: https://clinicalsite.example.com
@@ -151,8 +151,7 @@ Frontend:
 | APP_CS_CLIENT_ID           |       Ja     | Name des Browser-basierten ClinicalSite OIDC Clients (Authentifizierung ohne Kennwort) |               | client1                                 |
 | APP_CS_OIDC_SCOPE          |       Ja     | Scope des ClinicalSite OIDC Clients                                        |               | openid+profile+email                    |
 | BACKEND_PUBLIC_BASE_URL    |       Ja     | URL der Backend Instanz, diese muss über den Browser erreichbar sein       |               | https://backend.tfm.example.com         |
-| AI_SERVICE_FRONTEND_URL    |       Ja     | Frontend URL der AI-Instanz. Nur als Platzhalter erforderlich, da Feature noch in Entwicklung ist |               | https://ai-visitplan.example.com |
-| AI_SERVICE_BACKEND_URL     |       Ja     | Backend URL der AI-Instanz. Nur als Platzhalter erforderlich, da Feature noch in Entwicklung ist     |               | https://backend.ai-visitplan.example.com                              |
+| AI_BACKEND_BASE_URL        |       Nein   | Backend URL der AI-Instanz. Variable muss leer sein bzw. nicht gesetzt werden, um sicherustellen, dass der KI-Import deaktviert ist. || https://backend.ai-visitplan.example.com                              |
 
 Backend:
 
@@ -286,3 +285,6 @@ docker exec -it docker Container-ID /bin/bash
 ```shell
 docker logs Container-ID
 ```
+
+# Upgrade
+* Seit v2777: ENV `AI_SERVICE_FRONTEND_URL` und `AI_SERVICE_BACKEND_URL` wird durch `AI_BACKEND_BASE_URL` ersetzt. <br> 
