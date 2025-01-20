@@ -117,7 +117,6 @@ services:
       CLINICALSITE_ROLES_REPORT_PATH: /api/query/tfm_roles
       OIDC_CLIENT_ID: client2
       OIDC_CLIENT_SECRET: oidc_client_secret
-      LICENCE_SECRET: license_secret
       AI_BACKEND_BEARER_TOKEN: long_random_bearer_token_goes_here
     ports:
       - 4000:80      
@@ -126,6 +125,10 @@ services:
         source: ./licence.key
         target: /app/licence.key
         read_only: true    
+      - type: bind
+        source: ./public.pem
+        target: /app/public.pem
+        read_only: true
 
   db:
     image: postgres:15-alpine
@@ -170,7 +173,6 @@ Backend:
 | CLINICALSITE_ROLES_REPORT_PATH |   Ja     | Pfad zum ClinicalSite Report, in welchem die Benutzer Rollen und Rechte defniert sind. Der API-Bezeichner des Reports ist in ClinicalSite frei wählbar und muss im Pfad korrekt angegeben werden. | | "/api/query/${REPORT_NAME}", <br>z.B. "/api/query/tfm_roles"
 | OIDC_CLIENT_ID             |       Ja     | Name des Server-basierten ClinicalSite OIDC Clients (Authentifizierung per Kennwort)|               | client2                   |
 | OIDC_CLIENT_SECRET         |       Ja     | Kennwort des ClinicalSite OIDC Clients                                 |               |                                        |
-| LICENCE_SECRET             |       Ja     | Entschlüsselungs-Kennwort für die Lizenz Signatur                      |               |                                        |
 | AI_BACKEND_BEARER_TOKEN    |       Nein   | Bearer Token für den AI-Service. Diese muss mit dem Bearer Token des AI-Services übereinstimmen.                                        |               |                                        |
 
 # Docker Secrets
@@ -217,7 +219,6 @@ Backend:
 * `DB_OWNER_PASS`
 * `OIDC_CLIENT_ID`
 * `OIDC_CLIENT_SECRET`
-* `LICENCE_SECRET`
 * `AI_BACKEND_BEARER_TOKEN`
 
 # OIDC Konfiguration
@@ -290,5 +291,7 @@ docker logs Container-ID
 ```
 
 # Upgrade
+* Seit v2794: ENV "LICENCE_SECRET" entfällt. Wird noch supported, sollte allerdings durch das neue Verschlüsselungsverfahren ersetzt werden. Hierfür muss die Datei "public.pem" über den Volume Abschnitt gesetzt werden (empfohlen)
+
 * Seit v2777: ENV `AI_SERVICE_FRONTEND_URL` und `AI_SERVICE_BACKEND_URL` wird durch `AI_BACKEND_BASE_URL` ersetzt. <br> 
   Backend Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` hinzugefügt 
