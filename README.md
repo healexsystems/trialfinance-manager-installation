@@ -77,7 +77,7 @@ volumes:
 
 services:
   frontend:
-    image: healexsystems/sf-frontend:2794
+    image: healexsystems/sf-frontend:2815
     container_name: tfm-frontend    
     read_only: true
     depends_on:
@@ -100,7 +100,7 @@ services:
         target: /tmp
 
   backend:
-    image: healexsystems/sf-backend:2794
+    image: healexsystems/sf-backend:2815
     container_name: tfm-backend
     depends_on:
       - db
@@ -152,7 +152,7 @@ Frontend:
 | Umgebungsvariable          | Erforderlich | Kommentar/Beschreibung                                                     | Standart Wert |  Beispiel                               |
 |----------------------------|--------------|----------------------------------------------------------------------------|---------------|-----------------------------------------|
 | CLINICALSITE_BASE_URL      |       Ja     | Base URL der ClinialSite Instanz                                           |               | https://clinicalsite.example.com        |
-| APP_CS_CLIENT_ID           |       Ja     | Name des Browser-basierten ClinicalSite OIDC Clients (Authentifizierung ohne Kennwort) |               | client1                                 |
+| APP_CS_CLIENT_ID           |       Ja     | Name des Browser-basierten ClinicalSite OIDC Clients (Authentifizierung ohne Kennwort) |   | client1                                 |
 | APP_CS_OIDC_SCOPE          |       Ja     | Scope des ClinicalSite OIDC Clients                                        |               | openid+profile+email                    |
 | BACKEND_PUBLIC_BASE_URL    |       Ja     | URL der Backend Instanz, diese muss über den Browser erreichbar sein       |               | https://backend.tfm.example.com         |
 | AI_BACKEND_BASE_URL        |       Nein   | Backend URL der AI-Instanz. Variable muss leer sein bzw. nicht gesetzt werden, um sicherustellen, dass der KI-Import deaktviert ist. || https://backend.ai-visitplan.example.com                              |
@@ -171,7 +171,7 @@ Backend:
 | DB_OWNER_PASS              |       Ja     | Passwort des Datenbank-Migrations-Benutzers                            |               |                                        |
 | CLINICALSITE_BASE_URL      |       Ja     | Base URL der ClinialSite Instanz                                       |               | https://clinicalsite.example.com       |
 | CLINICALSITE_ROLES_REPORT_PATH |   Ja     | Pfad zum ClinicalSite Report, in welchem die Benutzer Rollen und Rechte defniert sind. Der API-Bezeichner des Reports ist in ClinicalSite frei wählbar und muss im Pfad korrekt angegeben werden. | | "/api/query/${REPORT_NAME}", <br>z.B. "/api/query/tfm_roles"
-| OIDC_CLIENT_ID             |       Ja     | Name des Server-basierten ClinicalSite OIDC Clients (Authentifizierung per Kennwort)|               | client2                   |
+| OIDC_CLIENT_ID             |       Ja     | Name des Server-basierten ClinicalSite OIDC Clients (Authentifizierung per Kennwort)|  | client2                                |
 | OIDC_CLIENT_SECRET         |       Ja     | Kennwort des ClinicalSite OIDC Clients                                 |               |                                        |
 | AI_BACKEND_BEARER_TOKEN    |       Nein   | Bearer Token für den AI-Service. Diese muss mit dem Bearer Token des AI-Services übereinstimmen.                                        |               |                                        |
 
@@ -295,3 +295,5 @@ docker logs Container-ID
 
 * Seit v2777: ENV `AI_SERVICE_FRONTEND_URL` und `AI_SERVICE_BACKEND_URL` wird durch `AI_BACKEND_BASE_URL` ersetzt. <br> 
   Backend Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` hinzugefügt 
+
+
