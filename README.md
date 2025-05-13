@@ -20,7 +20,7 @@ Der Healex TrialFinance Manager verbessert die Abrechnung klinischer Studien dur
 - [Login](#login)
 - [Container Shell](#zugriff-auf-die-container-shell)
 - [Logs](#anzeige-von-container-logs)
-- [Upgrade](#upgrade)
+- [Upgrade Notes](#upgrade-notes)
 
 # Systemanforderungen
 ## Umgebungseinrichtung
@@ -70,14 +70,12 @@ Am einfachsten lässt sich der TFM über `docker compose` starten. Hierfür werd
 Beispiel für eine compose.yml:
 
 ```yaml 
-version: '3.8'
-
 volumes:
   db:
 
 services:
   frontend:
-    image: healexsystems/sf-frontend:2815
+    image: healexsystems/sf-frontend:3059
     container_name: tfm-frontend    
     read_only: true
     depends_on:
@@ -100,7 +98,7 @@ services:
         target: /tmp
 
   backend:
-    image: healexsystems/sf-backend:2815
+    image: healexsystems/sf-backend:3059
     container_name: tfm-backend
     depends_on:
       - db
@@ -187,7 +185,7 @@ Beispiel 1: Wert wird über den Environment-Abschnitt gesetzt:
    backend:
      image: healexsystems/sf-backend:latest
      environment:
-       - LICENCE_SECRET=secret-pw
+       - OIDC_CLIENT_SECRET=secret-pw
 ```
 
 Beispiel 2: Wert wird über ein Docker-Secret gesetzt:
@@ -197,7 +195,7 @@ Beispiel 2: Wert wird über ein Docker-Secret gesetzt:
    backend:
      image: image: healexsystems/sf-backend:latest
      environment:
-       - LICENCE_SECRET_FILE=/run/secrets/app-secret
+       - OIDC_CLIENT_SECRET_FILE=/run/secrets/app-secret
      secrets:
        - app-secret
 
@@ -290,10 +288,12 @@ docker exec -it docker Container-ID /bin/bash
 docker logs Container-ID
 ```
 
-# Upgrade
+# Upgrade Notes
+* Seit v3039: ENV "LICENCE_SECRET" Support eingestellt.
+
 * Seit v2794: ENV "LICENCE_SECRET" entfällt. Wird noch supported, sollte allerdings durch das neue Verschlüsselungsverfahren ersetzt werden. Hierfür muss die Datei "public.pem" über den Volume Abschnitt gesetzt werden (empfohlen)
 
 * Seit v2777: ENV `AI_SERVICE_FRONTEND_URL` und `AI_SERVICE_BACKEND_URL` wird durch `AI_BACKEND_BASE_URL` ersetzt. <br> 
-  Backend Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` hinzugefügt 
+  Backend Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` hinzugefügt
 
-
+* Seit v2342: ENV `OIDC_AUTH_NAME` entfernt
