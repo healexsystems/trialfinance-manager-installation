@@ -5,7 +5,8 @@ Der Healex TrialFinance Manager verbessert die Abrechnung klinischer Studien dur
 - [Systemanforderungen](#systemanforderungen)
     * [Umgebungseinrichtung](#umgebungseinrichtung)
     * [Docker Installation](#docker-installation)
-    * [Lizensierung & Image Download](#lizensierung-und-download-des-docker-images)
+    * [Lizenzinformationen für TrialFinance](#lizenzinformationen-für-trialfinance)
+    * [Download des Docker Images](#download-des-docker-images)
     * [Hardwareanforderungen](#hardwareanforderungen)
     * [Clientseitige Anforderungen](#clientseitige-anforderungen)
 - [Erste Schritte](#erste-Schritte)
@@ -34,7 +35,34 @@ Mit dieser können die Hosts (unabhängig davon, ob real, virtuell, lokal oder r
 
 Installieren Sie hierfür die Docker Engine: https://docs.docker.com/get-docker
 
-## Lizensierung und Download des Docker Images
+## Lizenzinformationen für TrialFinance
+
+Um eine Lizenz zu erhalten, wenden Sie sich bitte an <support@healex.systems>. Die Lizenz umfasst zwei Dateien:
+
+- Lizenzschlüssel (*.key-Datei)
+- Öffentlicher Schlüssel (*.pem-Datei)
+
+Diese Dateien müssen per Volume-Bind-Mount in den Backend-Container von TrialFinance eingebunden werden:
+
+```yaml 
+    volumes:
+      - type: bind
+        source: ./licence.key
+        target: /app/licence.key
+        read_only: true    
+      - type: bind
+        source: ./public.pem
+        target: /app/public.pem
+        read_only: true
+```
+
+Stellen Sie sicher, dass die Berechtigungen der Lizenzdateien auf 644 (rw-r--r--) gesetzt sind:
+
+- 6 für den Besitzer: Lesen (r) + Schreiben (w) → 4 + 2 = 6
+- 4 für die Gruppe: Lesen (r)
+- 4 für alle anderen: Lesen (r)
+
+## Download des Docker Images
 
 Es wird ein Zugang zum privaten Healex Docker Repository benötigt.  
 Wenden Sie sich hierfür an <support@healex.systems>, um die Lizenzbedingungen zu besprechen. Sobald die Lizenz eingerichtet ist, erhalten Sie ihren Kontonamen, mit welchem der Zugriff zum Docker Repository ermöglicht wird.
@@ -289,9 +317,9 @@ docker logs Container-ID
 ```
 
 # Upgrade Notes
-* Seit v3039: ENV "LICENCE_SECRET" Support eingestellt.
+* Seit v3039: ENV "LICENCE_SECRET" Support eingestellt
 
-* Seit v2794: ENV "LICENCE_SECRET" entfällt. Wird noch supported, sollte allerdings durch das neue Verschlüsselungsverfahren ersetzt werden. Hierfür muss die Datei "public.pem" über den Volume Abschnitt gesetzt werden (empfohlen)
+* Seit v2794: ENV "LICENCE_SECRET" entfällt. Wird noch supported, sollte allerdings durch das neue Verschlüsselungsverfahren ersetzt werden. Hierfür muss die Datei "public.pem" über den Volume Abschnitt gesetzt werden
 
 * Seit v2777: ENV `AI_SERVICE_FRONTEND_URL` und `AI_SERVICE_BACKEND_URL` wird durch `AI_BACKEND_BASE_URL` ersetzt. <br> 
   Backend Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` hinzugefügt
