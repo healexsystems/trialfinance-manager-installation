@@ -12,15 +12,16 @@ Der Healex TrialFinance Manager verbessert die Abrechnung klinischer Studien dur
 - [Erste Schritte](#erste-Schritte)
 - [Umgebungsvariablen](#umgebungsvariablen)
 - [Docker Secrets](#docker-Secrets)
-- [OIDC Konfiguration](#oidc-konfiguration)
-  - [Einrichten der OIDC Clients in ClinicalSite](#einrichten-der-oidc-clients-in-clinicalsite)
-  - [OIDC System](#oidc-system)
-  - [Backend System](#backend-system)    
+- [ClinicalSite Konfiguration](#clinicalsite-konfiguration)
+  - [Erstellung der OIDC Clients](#erstellung-der-oidc-clients)
+    - [OIDC System](#oidc-system)
+    - [Backend System](#backend-system)
+  - [Erstellung des Rollen- und Rechte-Reports](#erstellung-des-rollen--und-rechte-reports)
 - [SSL Proxy Server](#ssl-proxy-server)
   - [Selbst signierte Zertifikate](#selbst-signierte-zertifikate)
-- [Login](#login)
-- [Container Shell](#zugriff-auf-die-container-shell)
-- [Logs](#anzeige-von-container-logs)
+- [Anmeldung](#anmeldung)
+- [Zugriff auf die Container-Shell](#zugriff-auf-die-container-shell)
+- [Anzeige von Container-Logs](#anzeige-von-container-logs)
 - [Upgrade Notes](#upgrade-notes)
 
 # Systemanforderungen
@@ -247,9 +248,9 @@ Backend:
 * `OIDC_CLIENT_SECRET`
 * `AI_BACKEND_BEARER_TOKEN`
 
-# OIDC Konfiguration
+# Clinicalsite Konfiguration
 
-## Einrichten der OIDC Clients in ClinicalSite
+## Erstellung der OIDC Clients
 
 Im ClinicalSite werden zwei unterschiedliche externe Systeme benötigt:
 * OIDC
@@ -259,7 +260,7 @@ Hierfür werden administrative Rechte in ClinicalSite benötigt. Navigieren Sie 
 * ` Verwaltung - Externe Systeme`
 * Erstellen Sie ein `Neues externes System`
 
-## OIDC System
+### OIDC System
 * Wählen Sie eine beliebige Bezeichnung für den Client im Feld `Name`
 * Wählen Sie einen Namen für den `Bezeichner (Client ID)`. Dieser Wert muss im Frontend-Service für die Umgebungsvariable `APP_CS_CLIENT_ID` gesetzt werden.
 * Wählen Sie Client-Typ: `Browser-basiert (Authentifizierung ohne Kennwort, PKCE-Unterstützung erforderlich)`
@@ -270,12 +271,188 @@ Hierfür werden administrative Rechte in ClinicalSite benötigt. Navigieren Sie 
 
 Das Kennwort (Client Secret) wird nicht benötigt und wird deshalb nicht in TrialFinance hinterlegt.
 
-## Backend System
+### Backend System
 * Wählen Sie eine beliebige Bezeichnung für den Client im Feld `Name`
 * Wählen Sie einen Namen für den `Bezeichner (Client ID)`. Dieser Wert muss im Backend-Service für die Umgebungsvariable `OIDC_CLIENT_ID` gesetzt werden.
 * Wählen Sie Client-Typ: `Server-basiert (Authentifizierung per Kennwort)`
 * Legen Sie den Client an
-* Das Kennwort (Client Secret) muss im Backend-Service für die Umgebungsvariable `OIDC_CLIENT_SECRET` gesetzt werden.
+* Das Kennwort (Client Secret) muss im Backend-Service für die [Umgebungsvariable](#umgebungsvariablen) `OIDC_CLIENT_SECRET` gesetzt werden.
+
+## Erstellung des Rollen- und Rechte-Reports
+
+Hierfür werden administrative Rechte in ClinicalSite benötigt. Navigieren Sie zu: <br> 
+* `Verwaltung - Reports`
+* Erstellen Sie einen `Neuen Report`
+
+Im folgenden werden lediglich die notwendigen Parameter gelistet:
+
+* Wählen Sie eine beliebige Bezeichnung für den Report im Feld `Name`
+* Wählen Sie einen Namen für den `API-Bezeichner`. Der Name ist Teil der [Umgebungsvariable](#umgebungsvariablen) `CLINICALSITE_ROLES_REPORT_PATH` des Backend-Services
+* Wählen Sie als `Externe Systeme mit Zugriff` den Client des [Backend Systems](#backend-system)
+* Das Feld `SQL`enthält die folgende SQL-Abfrage, wobei die `report parameter`: `tenant`, `root_orgunit` und `manager_orgunit` entsprechend gesetzt werden müssen
+
+<br>
+
+```sql
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- report parameters                  -
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+SELECT
+     1 AS tenant,
+     10 AS root_orgunit,
+     11 AS manager_orgunit;
+```
+
+<br>
+
+| SQL-Parameter   | Kommentar/Beschreibung                                                                                                                                                                                                           | Beispiel |
+|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| tenant          | ID des Mandanten                                                                                                                                                                                                                | 1        |
+| root_orgunit    | ID der übergeordneten Organisationseinheit                                                                                                                                                                                      | 10       |
+| manager_orgunit | ID der Organisationseinheit, in der die Verwalter, Manager oder Koordinatoren für das Modul Finance hinterlegt sind (in der Regel trägt diese Organisationseinheit den Namen „TrialSite Finance Manager“). Die affiliierten Benutzer werden in der Applikation Finance als „clinic-user“ bezeichnet. Sie besitzen umfassende Rechte innerhalb der Anwendung und können alle Studien einsehen   | 11       |
+
+<br>
+
+
+Die entsprechenden IDs für Mandanten und Organisationseinheiten können dem URL-Pfad entnommen werden:
+
+  - Mandanten: `https://clinicalsite.example.com/tenant/{ID}`
+  - Organisationseinheiten: `https://clinicalsite.example.com/ou/{ID}`
+
+<br>
+
+
+```md
+SQL Abfrage:
+```
+
+```sql
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- report parameters                                         -
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CREATE TEMPORARY TABLE report_parameters AS
+SELECT
+     10 AS tenant,
+     5524 AS  root_orgunit,
+     5525 AS  manager_orgunit;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- org-unit relations                                        -
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CREATE TEMPORARY TABLE orgunit_relations AS
+SELECT
+    tenant.id         AS tenant,
+    tenant.name       AS tenant_name,
+    orgunit.id        AS orgunit,
+    orgunit.parent_ou AS parent_orgunit,
+    orgunit.name      AS orgunit_name
+FROM orgunit
+INNER JOIN report_parameters
+    ON orgunit.tenant = report_parameters.tenant
+    AND (
+            orgunit.id = report_parameters.root_orgunit
+            OR orgunit. parent_ou  = report_parameters.root_orgunit
+   )
+INNER JOIN tenant
+    ON orgunit.tenant = tenant.id;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- org-unit trials                                           -
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CREATE TEMP TABLE orgunit_trials AS
+SELECT
+    trial.id AS trial,
+    trial.publictitle AS trial_title,
+    trialsite.orgunit,
+    orgunit_relations.orgunit_name
+FROM trial
+INNER JOIN trialsite
+    ON trial.id  = trialsite.trial
+INNER JOIN orgunit_relations
+    ON trialsite.orgunit = orgunit_relations.orgunit
+    AND trial.tenant = (SELECT tenant FROM report_parameters)
+;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- person to orgunit relations                               -
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CREATE TEMPORARY TABLE person_orgunit_relations AS
+SELECT
+    orgunit.id AS orgunit,
+    orgunit.parent_ou AS orgunit_parent,
+    orgunit.name AS orgunit_name,
+    person.id AS person,
+    CONCAT(person.firstname , ' ', person.name) AS "name",
+    person.email
+FROM person
+INNER JOIN person_ou
+    ON person_ou.person = person.id
+INNER JOIN orgunit_relations
+    ON person_ou.orgunit = orgunit_relations.orgunit
+INNER JOIN orgunit
+    ON person_ou.orgunit = orgunit.id;
+
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- org and trial roles                               -
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CREATE TEMP TABLE org_trial_person_roles AS
+SELECT DISTINCT site, trial, trial_title, person, orgtype, "role"
+FROM (
+    SELECT
+        orgunit_relations.orgunit AS site,
+        NULL AS trial,
+        NULL AS trial_title,
+        person_orgunit_relations.person,
+        'site' AS orgtype,
+        'clinic_user' AS "role"
+    FROM person_orgunit_relations
+    LEFT JOIN orgunit_relations
+        ON person_orgunit_relations.orgunit = orgunit_relations.parent_orgunit
+           OR orgunit_relations.parent_orgunit IS NULL 
+    WHERE person_orgunit_relations.orgunit = (SELECT manager_orgunit FROM report_parameters)
+    UNION
+    SELECT
+        person_orgunit_relations.orgunit AS site,
+        trialsite_assistant.trial,
+        trial.publictitle AS trial_title,
+        trialsite_assistant.person,
+        'trial' AS orgtype,
+        'nurse_user' AS "role"
+    FROM trialsite_assistant
+    INNER JOIN person_orgunit_relations
+        ON trialsite_assistant.person = person_orgunit_relations.person
+    INNER JOIN trial
+        ON trialsite_assistant.trial = trial.id
+)
+AS basic_trial_roles
+ORDER BY basic_trial_roles.trial
+;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- export                                                    -
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+SELECT DISTINCT
+    org_trial_person_roles.person,
+    person_orgunit_relations.name,
+    person_orgunit_relations.email,
+    org_trial_person_roles.site,
+    orgunit_relations.orgunit_name AS site_name,
+    org_trial_person_roles.trial,
+    org_trial_person_roles.trial_title,
+    org_trial_person_roles.role    
+FROM org_trial_person_roles
+INNER JOIN person_orgunit_relations
+    ON org_trial_person_roles.person = person_orgunit_relations.person
+LEFT JOIN orgunit_relations
+    ON org_trial_person_roles.site = orgunit_relations.orgunit
+ORDER BY 
+    org_trial_person_roles.person,
+    org_trial_person_roles.site,
+    org_trial_person_roles.trial
+;
+```
+
 
 
 # SSL Proxy-Server
@@ -301,7 +478,7 @@ Hierfür muss das Root Zertifikat ebenfalls über den Volume-Abschnitt in den Co
         read_only: true   
 ```
 
-# Login
+# Anmeldung
 Ein Login ist ausschließlich über OIDC möglich.
 
 # Zugriff auf die Container-Shell
