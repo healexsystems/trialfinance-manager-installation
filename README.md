@@ -114,7 +114,6 @@ services:
       CLINICALSITE_BASE_URL: https://clinicalsite.example.com
       APP_CS_OIDC_SCOPE: openid+profile+email
       APP_CS_CLIENT_ID: client1
-      AI_BACKEND_BASE_URL: https://backend.ai-visitplan.example.com
     ports:
       - 8080:80
     volumes:
@@ -145,6 +144,7 @@ services:
       OIDC_CLIENT_ID: client2
       OIDC_CLIENT_SECRET: oidc_client_secret
       AI_BACKEND_BEARER_TOKEN: long_random_bearer_token_goes_here
+      AI_BACKEND_BASE_URL: https://backend.ai-visitplan.example.com
     ports:
       - 4000:80      
     volumes:
@@ -182,7 +182,6 @@ Frontend:
 | APP_CS_CLIENT_ID           |       Ja     | Name des Browser-basierten ClinicalSite OIDC Clients (Authentifizierung ohne Kennwort) |   | client1                                 |
 | APP_CS_OIDC_SCOPE          |       Ja     | Scope des ClinicalSite OIDC Clients                                        |               | openid+profile+email                    |
 | BACKEND_PUBLIC_BASE_URL    |       Ja     | URL der Backend Instanz, diese muss über den Browser erreichbar sein       |               | https://backend.tfm.example.com         |
-| AI_BACKEND_BASE_URL        |       Nein   | Backend URL der AI-Instanz. Variable muss leer sein bzw. nicht gesetzt werden, um sicherustellen, dass der KI-Import deaktviert ist. || https://backend.ai-visitplan.example.com                              |
 
 Backend:
 
@@ -201,6 +200,7 @@ Backend:
 | OIDC_CLIENT_ID             |       Ja     | Name des Server-basierten ClinicalSite OIDC Clients (Authentifizierung per Kennwort)|  | client2                                |
 | OIDC_CLIENT_SECRET         |       Ja     | Kennwort des ClinicalSite OIDC Clients                                 |               |                                        |
 | AI_BACKEND_BEARER_TOKEN    |       Nein   | Bearer Token für den AI-Service. Diese muss mit dem Bearer Token des AI-Services übereinstimmen.                                        |               |                                        |
+| AI_BACKEND_BASE_URL        |       Nein   | Backend URL der AI-Instanz. Variable muss leer sein bzw. nicht gesetzt werden, um sicherustellen, dass der KI-Import deaktviert ist. || https://backend.ai-visitplan.example.com                              |
 
 # Docker Secrets
 Als eine Alternative zur Weitergabe vertraulicher Informationen über Umgebungsvariablen können Docker-Secrets verwendet werden.
