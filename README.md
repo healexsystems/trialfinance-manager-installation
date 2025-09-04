@@ -104,7 +104,7 @@ volumes:
 
 services:
   frontend:
-    image: healexsystems/sf-frontend:3059
+    image: healexsystems/sf-frontend:3217
     container_name: tfm-frontend    
     read_only: true
     depends_on:
@@ -126,7 +126,7 @@ services:
         target: /tmp
 
   backend:
-    image: healexsystems/sf-backend:3059
+    image: healexsystems/sf-backend:3217
     container_name: tfm-backend
     depends_on:
       - db
