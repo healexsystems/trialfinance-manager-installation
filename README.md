@@ -289,7 +289,7 @@ Im folgenden werden lediglich die notwendigen Parameter gelistet:
 * Wählen Sie eine beliebige Bezeichnung für den Report im Feld `Name`
 * Wählen Sie einen Namen für den `API-Bezeichner`. Der Name ist Teil der [Umgebungsvariable](#umgebungsvariablen) `CLINICALSITE_ROLES_REPORT_PATH` des Backend-Services
 * Wählen Sie als `Externe Systeme mit Zugriff` den Client des [Backend Systems](#backend-system)
-* Das Feld `SQL`enthält die folgende SQL-Abfrage, wobei die `report parameter`: `tenant`, `root_orgunit` und `manager_orgunit` entsprechend gesetzt werden müssen
+* Das Feld `SQL`enthält die folgende SQL-Abfrage, wobei die `report parameter`: `tenant`, `root_orgunit`, `manager_orgunit` und `provider_orgunits` entsprechend gesetzt werden müssen
 
 <br>
 
@@ -301,6 +301,7 @@ SELECT
      1 AS tenant,
      10 AS root_orgunit,
      11 AS manager_orgunit;
+     ARRAY[5544, 5547] AS provider_orgunits;
 ```
 
 <br>
@@ -310,6 +311,7 @@ SELECT
 | tenant          | ID des Mandanten                                                                                                                                                                                                                | 1        |
 | root_orgunit    | ID der übergeordneten Organisationseinheit                                                                                                                                                                                      | 10       |
 | manager_orgunit | ID der Organisationseinheit, in der die Verwalter, Manager oder Koordinatoren für das Modul Finance hinterlegt sind (in der Regel trägt diese Organisationseinheit den Namen „TrialSite Finance Manager“). Die affiliierten Benutzer werden in der Applikation Finance als „clinic-user“ bezeichnet. Sie besitzen umfassende Rechte innerhalb der Anwendung und können alle Studien einsehen   | 11       |
+| provider_orgunits    | Auflistung der Provider-Organisationseinheiten, getrennt durch Kommas. Der Wert ARRAY[0] kennzeichnet, dass keine Provider-Organisationseinheiten vorhanden sind                                                                                                                                                                                      | ARRAY[5544, 5547]       |
 
 <br>
 
@@ -328,13 +330,14 @@ SQL Abfrage:
 
 ```sql
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- report parameters                                         -
+-- report parameters (instead of variables)                  -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CREATE TEMPORARY TABLE report_parameters AS
 SELECT
-     10 AS tenant,
-     5524 AS  root_orgunit,
-     5525 AS  manager_orgunit;
+     4 AS tenant,
+     5397 AS  root_orgunit,
+     5398 AS  manager_orgunit,
+     ARRAY[0] AS provider_orgunits;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- org-unit relations                                        -
@@ -392,24 +395,20 @@ INNER JOIN orgunit_relations
 INNER JOIN orgunit
     ON person_ou.orgunit = orgunit.id;
 
-
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- org and trial roles                               -
+-- org and trial roles                                       -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CREATE TEMP TABLE org_trial_person_roles AS
 SELECT DISTINCT site, trial, trial_title, person, orgtype, "role"
 FROM (
-    SELECT
-        orgunit_relations.orgunit AS site,
-        NULL AS trial,
+    SELECT DISTINCT 
+        person_orgunit_relations.orgunit AS site,
+        NULL::int AS trial,
         NULL AS trial_title,
         person_orgunit_relations.person,
         'site' AS orgtype,
         'clinic_user' AS "role"
     FROM person_orgunit_relations
-    LEFT JOIN orgunit_relations
-        ON person_orgunit_relations.orgunit = orgunit_relations.parent_orgunit
-           OR orgunit_relations.parent_orgunit IS NULL 
     WHERE person_orgunit_relations.orgunit = (SELECT manager_orgunit FROM report_parameters)
     UNION
     SELECT
@@ -424,6 +423,20 @@ FROM (
         ON trialsite_assistant.person = person_orgunit_relations.person
     INNER JOIN trial
         ON trialsite_assistant.trial = trial.id
+    UNION 
+    SELECT 
+        orgunit_relations.orgunit AS site,
+        NULL AS trial,
+        NULL AS trial_title,
+        person_orgunit_relations.person,
+        'provider' AS orgtype,
+        'provider_user' AS "role"
+    FROM orgunit_relations
+    INNER JOIN person_orgunit_relations
+        ON orgunit_relations.orgunit = person_orgunit_relations.orgunit
+    WHERE orgunit_relations.orgunit IN (
+        SELECT unnest(provider_orgunits) FROM report_parameters
+    )
 )
 AS basic_trial_roles
 ORDER BY basic_trial_roles.trial
@@ -452,8 +465,6 @@ ORDER BY
     org_trial_person_roles.trial
 ;
 ```
-
-
 
 # SSL Proxy-Server
 Eine SSL-Verschlüsselung mittels eines Proxy Servers ist empfohlen und im produktiven Betrieb zwingend.
