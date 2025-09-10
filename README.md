@@ -328,14 +328,16 @@ SQL Abfrage:
 
 ```sql
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- report parameters                                         -
+-- report parameters (instead of variables)                  -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CREATE TEMPORARY TABLE report_parameters AS
 SELECT
-     10 AS tenant,
-     5524 AS  root_orgunit,
-     5525 AS  manager_orgunit;
-
+     4 AS tenant,
+     5397 AS  root_orgunit,
+     5397 AS  manager_orgunit,
+     ARRAY[5544, 5545] AS provider_orgunits;
+ 
+ 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- org-unit relations                                        -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -355,7 +357,10 @@ INNER JOIN report_parameters
    )
 INNER JOIN tenant
     ON orgunit.tenant = tenant.id;
-
+ 
+ 
+ 
+ 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- org-unit trials                                           -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -372,7 +377,10 @@ INNER JOIN orgunit_relations
     ON trialsite.orgunit = orgunit_relations.orgunit
     AND trial.tenant = (SELECT tenant FROM report_parameters)
 ;
-
+ 
+ 
+ 
+ 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- person to orgunit relations                               -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -391,10 +399,11 @@ INNER JOIN orgunit_relations
     ON person_ou.orgunit = orgunit_relations.orgunit
 INNER JOIN orgunit
     ON person_ou.orgunit = orgunit.id;
-
-
+ 
+ 
+ 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- org and trial roles                               -
+-- org and trial roles                                       -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CREATE TEMP TABLE org_trial_person_roles AS
 SELECT DISTINCT site, trial, trial_title, person, orgtype, "role"
@@ -407,9 +416,12 @@ FROM (
         'site' AS orgtype,
         'clinic_user' AS "role"
     FROM person_orgunit_relations
-    LEFT JOIN orgunit_relations
-        ON person_orgunit_relations.orgunit = orgunit_relations.parent_orgunit
-           OR orgunit_relations.parent_orgunit IS NULL 
+    INNER JOIN orgunit_relations
+        ON (person_orgunit_relations.orgunit = orgunit_relations.parent_orgunit
+             OR orgunit_relations.parent_orgunit IS NULL)
+        AND orgunit_relations.orgunit NOT IN (
+            SELECT unnest(provider_orgunits) FROM report_parameters
+        ) 
     WHERE person_orgunit_relations.orgunit = (SELECT manager_orgunit FROM report_parameters)
     UNION
     SELECT
@@ -424,11 +436,27 @@ FROM (
         ON trialsite_assistant.person = person_orgunit_relations.person
     INNER JOIN trial
         ON trialsite_assistant.trial = trial.id
+    UNION 
+    SELECT 
+        orgunit_relations.orgunit AS site,
+        NULL AS trial,
+        NULL AS trial_title,
+        person_orgunit_relations.person,
+        'provider' AS orgtype,
+        'provider_user' AS "role"
+    FROM orgunit_relations
+    INNER JOIN person_orgunit_relations
+        ON orgunit_relations.orgunit = person_orgunit_relations.orgunit
+    WHERE orgunit_relations.orgunit IN (
+        SELECT unnest(provider_orgunits) FROM report_parameters
+    )
 )
 AS basic_trial_roles
 ORDER BY basic_trial_roles.trial
 ;
-
+ 
+ 
+ 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- export                                                    -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
