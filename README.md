@@ -17,6 +17,7 @@ Der Healex TrialFinance Manager verbessert die Abrechnung klinischer Studien dur
     - [OIDC System](#oidc-system)
     - [Backend System](#backend-system)
   - [Erstellung des Rollen- und Rechte-Reports](#erstellung-des-rollen--und-rechte-reports)
+- [AI-Service](#ai-service)
 - [SSL Proxy Server](#ssl-proxy-server)
   - [Selbst signierte Zertifikate](#selbst-signierte-zertifikate)
 - [Anmeldung](#anmeldung)
@@ -73,6 +74,7 @@ Wenden Sie sich hierfür an <support@healex.systems>, um die Lizenzbedingungen z
 | Service                    | vCPU    | RAM    | Festplattenspeicher |
 |----------------------------|---------|--------|---------------------|
 | TrialFinance Manager       | 2       | 4 GB   | 5 GB                |
+| TrialFinance AI-Service    | 1       | 1 GB   | -                   |
 
 Diese Mindestwerte eignen sich für Tests, Prototypen, Pre-PROD und erfahrungsgemäß für den anfänglichen Betrieb der Produktionsumgebung. 
 Abhängig von der Entwicklung der realen Nutzung können sich hiervon abweichende Systemanforderungen ergeben. 
@@ -471,6 +473,73 @@ ORDER BY
     org_trial_person_roles.trial
 ;
 ```
+
+
+# AI-Service
+
+Der AI-Service stellt ein optionales Feature für den TrialFinance Manager dar. Der Docker-Service kann abhängig vom jeweiligen Anwendungsfall entweder im selben Stack wie TrialFinance oder in einem separaten Stack betrieben werden. Wird der AI-Service von mehreren TrialFinance-Instanzen genutzt, bietet es sich an diesen in einem separaten Stack zu betreiben.
+
+
+Beispiel für eine compose.yml:
+
+```yaml 
+services:
+  ai-backend:
+    image: healexsystems/ai-backend:latest
+    cap_drop:
+      - ALL
+    environment:
+      BEARER_TOKEN: bearer-token-secret
+      TELEKOMAI_API_KEY: telekom-api-key-secret
+      FRONTEND_URLS: https://tfm.example.com
+    ports:
+      - 8080:80
+```
+
+Es wird empfohlen für die Umgebungsvariablen `BEARER_TOKEN` und `TELEKOMAI_API_KEY` Docker Secrets zu verwenden. <br>
+Weitere Informationen finden sich unter: https://docs.docker.com/engine/swarm/secrets/
+
+Beispiel für eine compose.yml mit Docker Secrets:
+
+```yaml 
+
+secrets:
+  SECRET-BEARER-TOKEN:
+    external: true
+  SECRET-TELEKOMAI_API_KEY:
+    external: true
+
+services:
+  ai-backend:
+    ...
+    ... 
+    secrets:
+      - SECRET-BEARER-TOKEN
+      - SECRET-TELEKOMAI_API_KEY
+    environment:
+      BEARER_TOKEN_FILE: /run/secrets/SECRET-BEARER-TOKEN
+      TELEKOMAI_API_KEY_FILE: /run/secrets/SECRET-TELEKOMAI_API_KEY
+      ...
+
+```
+
+## Umgebungsvariablen des AI-Services
+
+AI-Service:
+
+| Umgebungsvariable          | Erforderlich | Kommentar/Beschreibung                                                     |  Beispiel                               |
+|----------------------------|--------------|----------------------------------------------------------------------------|-----------------------------------------|
+| BEARER_TOKEN               |       Ja     | Das Secret sollte aus einer zufällig generierten, 128 Zeichen langen alphanumerischen Zeichenkette mit Groß- und Kleinschreibung bestehen |  https://clinicalsite.example.com        |
+| TELEKOMAI_API_KEY          |       Ja     | API Key für den Telekom AI Provider                                               |                                    |
+| FRONTEND_URLS              |       Ja     | Frontend URL des TrialFinance Service. URLs können entweder als reguläre Ausdrücke (RegEx) oder in normaler, expliziter Schreibweise definiert werden. Mehrere Einträge sind durch Leerzeichen zu trennen       | https://tfm.example.com /^https://[a-z0-9.-]+.example.com$$/  |
+
+## Anbindung des AI-Service an den TrialFinance Manager
+
+1. Der Port 80 des Containers ist ausschließlich intern vorgesehen und muss über einen SSL Reverse Proxy (z. B. Nginx, Traefik) nach außen freigegeben werden. Die daraus resultierende HTTPS-URL wird im TrialFinance Manager über die Environment-Variable `AI_BACKEND_BASE_URL` konfiguriert.
+
+2. Die Umgebungsvariable des AI-Services `BEARER_TOKEN` muss mit der Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` des TrialFinance Managers übereinstimmen.
+
+
 
 # SSL Proxy-Server
 Eine SSL-Verschlüsselung mittels eines Proxy Servers ist empfohlen und im produktiven Betrieb zwingend.
