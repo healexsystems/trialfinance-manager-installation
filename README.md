@@ -330,6 +330,12 @@ SQL Abfrage:
 
 ```sql
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- Version: 2.1.0                                           --
+-- compatible minimum TFM version 1.2.3217                  --
+-- and minimum ClincalSite version: 20250604-013ab7         --
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- report parameters (instead of variables)                  -
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CREATE TEMPORARY TABLE report_parameters AS
@@ -511,5 +517,7 @@ docker logs Container-ID
 
 * Seit v2777: ENV `AI_SERVICE_FRONTEND_URL` und `AI_SERVICE_BACKEND_URL` wird durch `AI_BACKEND_BASE_URL` ersetzt. <br> 
   Backend Umgebungsvariable `AI_BACKEND_BEARER_TOKEN` hinzugefügt
+
+* Seit v2573: ENV `CSRF_SECRET` entfernt
 
 * Seit v2342: ENV `OIDC_AUTH_NAME` entfernt
